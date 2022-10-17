@@ -13,13 +13,13 @@ def load_dataset(data_config):
     Arguments:
         data_config (dict): dictionary containing data configuration arguments
     Returns:
-        tuple of (train, val), each of which is a PyTorch dataset.
+        tuple of (train, val), each of which is a PyTorch datasets.
     """
     data_path = data_config["data_path"]  # path to data directory
     if data_path is not None:
         assert os.path.exists(data_path), "Data path {} not found.".format(data_path)
 
-    # the name of the dataset to load
+    # the name of the datasets to load
     dataset_name = data_config["dataset_name"]
     dataset_name = dataset_name.lower()  # cast dataset_name to lower case
     train = val = None
@@ -27,29 +27,29 @@ def load_dataset(data_config):
         if not os.path.exists(os.path.join(data_path, "kth_actions")):
             os.makedirs(os.path.join(data_path, "kth_actions"))
         if not os.path.exists(os.path.join(data_path, "kth_actions", "train")):
-            print("Downloading KTH Actions dataset...")
+            print("Downloading KTH Actions datasets...")
             actions = ["walking", "jogging", "running", "boxing", "handwaving", "handclapping"]
             for action in actions:
                 print("Downloading " + action + "...")
                 # if not os.path.exists(os.path.join(data_path, 'kth_actions', action + '.zip')):
-                save(
-                    "http://www.nada.kth.se/cvap/actions/" + action + ".zip",
-                    os.path.join(data_path, "kth_actions", action + ".zip"),
-                )
+                # save(
+                #    "http://www.nada.kth.se/cvap/actions/" + action + ".zip",
+                #    os.path.join(data_path, "kth_actions", action + ".zip"),
+                #)
                 print("\n")
             print("Done.")
 
-            print("Unzipping KTH Actions dataset...")
+            print("Unzipping KTH Actions datasets...")
             for action in actions:
                 print("Unzipping " + action + "...")
                 zip_ref = ZipFile(os.path.join(data_path, "kth_actions", action + ".zip"), "r")
                 os.makedirs(os.path.join(data_path, "kth_actions", action))
                 zip_ref.extractall(os.path.join(data_path, "kth_actions", action))
                 zip_ref.close()
-                os.remove(os.path.join(data_path, "kth_actions", action + ".zip"))
+                # os.remove(os.path.join(data_path, "kth_actions", action + ".zip"))
             print("Done.")
 
-            print("Processing KTH Actions dataset...")
+            print("Processing KTH Actions datasets...")
             from .misc_data_util.convert_kth_actions import convert
 
             convert(os.path.join(data_path, "kth_actions"))
@@ -102,14 +102,14 @@ def load_dataset(data_config):
             os.makedirs(os.path.join(data_path, "bair_robot_pushing"))
 
         if not os.path.exists(os.path.join(data_path, "bair_robot_pushing", "train")):
-            print("Downloading BAIR Robot Pushing dataset...")
+            print("Downloading BAIR Robot Pushing datasets...")
             save(
                 "http://rail.eecs.berkeley.edu/datasets/bair_robot_pushing_dataset_v0.tar",
                 os.path.join(data_path, "bair_robot_pushing", "bair_robot_pushing_dataset_v0.tar"),
             )
             print("Done.")
 
-            print("Untarring BAIR Robot Pushing dataset...")
+            print("Untarring BAIR Robot Pushing datasets...")
             tar = tarfile.open(
                 os.path.join(data_path, "bair_robot_pushing", "bair_robot_pushing_dataset_v0.tar")
             )
@@ -166,7 +166,7 @@ def load_dataset(data_config):
             os.makedirs(os.path.join(data_path, "moving_mnist"))
 
         if not os.path.exists(os.path.join(data_path, "moving_mnist", "train")):
-            print("Downloading Moving MNIST dataset...")
+            print("Downloading Moving MNIST datasets...")
             save(
                 "http://www.cs.toronto.edu/~nitish/unsupervised_video/mnist_test_seq.npy",
                 os.path.join(data_path, "moving_mnist", "mnist_test_seq.npy"),

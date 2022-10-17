@@ -6,7 +6,7 @@ import torch
 
 class KTHActions(Dataset):
     """
-    Dataset object for KTH actions dataset. The dataset must be stored
+    Dataset object for KTH actions datasets. The datasets must be stored
     with each video (action sequence) in a separate directory:
         /path
             /person01_walking_d1_0

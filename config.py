@@ -12,7 +12,7 @@ ema_step = 5
 ema_start_step = 2000
 
 # load
-load_model = True
+load_model = False
 load_step = False
 
 # diffusion config
@@ -32,11 +32,11 @@ additional_note = ""
 
 # data config
 data_config = {
-    "dataset_name": "city",
-    "data_path": "*",
+    "dataset_name": "kth_actions",
+    "data_path": "datasets",
     "sequence_length": 8,
     "img_size": 256,
-    "img_channel": 3,
+    "img_channel": 1,
     "add_noise": False,
     "img_hz_flip": False,
 }
@@ -56,5 +56,5 @@ else:
 
 model_name = f"{backbone}-{optimizer}-{pred_mode}-{loss_type}-{data_config['dataset_name']}-d{embed_dim}-t{iteration_step}-{transform_mode}-al{aux_loss}{additional_note}"
 
-result_root = "*"
-tensorboard_root = "*"
+result_root = "results"
+tensorboard_root = "tensorboard"

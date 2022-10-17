@@ -6,7 +6,7 @@ import torch
 
 
 class StochasticMovingMNIST(Dataset):
-    """Data Handler that creates Bouncing MNIST dataset on the fly."""
+    """Data Handler that creates Bouncing MNIST datasets on the fly."""
     def __init__(self,
                  train,
                  data_root,

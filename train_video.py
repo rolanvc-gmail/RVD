@@ -9,6 +9,7 @@ from modules.unet import Unet
 from modules.trainer import Trainer
 from modules.temporal_models import HistoryNet, CondNet
 from torch.nn.parallel import DistributedDataParallel as DDP
+import os
 
 
 parser = argparse.ArgumentParser(description="values from bash script")
@@ -21,6 +22,8 @@ def schedule_func(ep):
 
 
 def main(rank, world_size):
+    os.environ['MASTER_ADDR'] = '127.0.0.1'
+    os.environ['MASTER_PORT'] = '29500'
 
     dist.init_process_group("nccl", rank=rank, world_size=world_size)
 

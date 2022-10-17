@@ -7,7 +7,7 @@ from torch.utils.data.distributed import DistributedSampler
 
 def load_data(data_config, batch_size, num_workers=4, pin_memory=True, sequence=True, distributed=False):
     """
-    Wrapper around load_dataset. Gets the dataset, then places it in a DataLoader.
+    Wrapper around load_dataset. Gets the datasets, then places it in a DataLoader.
 
     Args:
         data_config (dict): data configuration dictionary

@@ -6,10 +6,10 @@ from torch.utils.data import Dataset
 
 class MovingMNIST(Dataset):
     """
-    Dataset class for moving MNIST dataset.
+    Dataset class for moving MNIST datasets.
 
     Args:
-        path (str): path to the .npy dataset
+        path (str): path to the .npy datasets
         transform (torchvision.transforms): image/video transforms
     """
 

@@ -5,7 +5,7 @@ import os
 
 class RobotPushing(torch.utils.data.Dataset):
     """
-    dataset class for moving-mnist dataset
+    datasets class for moving-mnist datasets
     """
     def __init__(self, is_train, data_path=None):
         super(RobotPushing, self).__init__()

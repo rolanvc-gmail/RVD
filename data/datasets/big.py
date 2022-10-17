@@ -7,7 +7,7 @@ import torch
 
 class BIG(Dataset):
     """
-    Dataset object for BAIR robot pushing dataset. The dataset must be stored
+    Dataset object for BAIR robot pushing datasets. The datasets must be stored
     with each video in a separate directory:
         /path
             /0

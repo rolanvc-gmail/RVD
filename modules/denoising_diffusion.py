@@ -228,6 +228,7 @@ class GaussianDiffusion(nn.Module):
         return context, trans_shift_scale
 
     def forward(self, video):
+        """ video is Tensor(8, 1, 1, 256,256) """
         device = video.device
         T, B, C, H, W = video.shape
         t = torch.randint(0, self.num_timesteps, (B,), device=device).long()
@@ -238,7 +239,7 @@ class GaussianDiffusion(nn.Module):
             self.transform_fn.init_state(state_shape)
             self.otherlogs["predict"] = []
 
-        for i in range(video.shape[0]):
+        for i in range(video.shape[0]): # go through the batch
             if i >= 2:
                 L = self.step_forward(video[i], context, t, trans_shift_scale)
                 loss += L

@@ -6,10 +6,10 @@ from torch.utils.data import Dataset
 
 class BouncingBall(Dataset):
     """
-    Dataset class for moving MNIST dataset.
+    Dataset class for moving MNIST datasets.
 
     Args:
-        path (str): path to the .mat dataset
+        path (str): path to the .mat datasets
         transform (torchvision.transforms): image/video transforms
     """
     def __init__(self, path, sequence_lengh):
