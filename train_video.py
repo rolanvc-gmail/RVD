@@ -22,10 +22,14 @@ def schedule_func(ep):
 
 
 def main(rank, world_size):
+<<<<<<< HEAD
     os.environ['MASTER_ADDR'] = '127.0.0.1'
     os.environ['MASTER_PORT'] = '29500'
+=======
+    os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
+>>>>>>> 4edb935 (commented)
 
-    dist.init_process_group("nccl", rank=rank, world_size=world_size)
+    dist.init_process_group("nccl", rank=rank, world_size=world_size)   # this allows processes to communicate with each other
 
     train_data, val_data = load_data(
         config.data_config,
@@ -61,23 +65,22 @@ def main(rank, world_size):
         else None
     )
 
-
     diffusion = GaussianDiffusion(
-        denoise_fn=denoise_model,
-        history_fn=context_model,
-        transform_fn=transform_model,
-        pred_mode=config.pred_mode,
-        clip_noise=config.clip_noise,
-        timesteps=config.iteration_step,
-        loss_type=config.loss_type,
+        denoise_fn=denoise_model,  # Unet
+        history_fn=context_model,  # CondNet
+        transform_fn=transform_model,  # (HistoryNet)
+        pred_mode=config.pred_mode,  # noise
+        clip_noise=config.clip_noise,  # True
+        timesteps=config.iteration_step,  # 1600
+        loss_type=config.loss_type,  # l1
         aux_loss=False,
     ).to(rank)
 
-    diffusion = DDP(diffusion, device_ids=[rank])
+    diffusion = DDP(diffusion, device_ids=[rank])  # wrap GaussianDiffusion inside a DistributedDataParallel
 
     trainer = Trainer(
-        rank=rank,
-        diffusion_model=diffusion,
+        rank=rank,  # used for multiprocessing
+        diffusion_model=diffusion,  # GaussianDiffusion
         train_dl=train_data,
         val_dl=val_data,
         sample_num_of_frame=config.init_num_of_frame + 1,
@@ -105,5 +108,6 @@ def main(rank, world_size):
 
 if __name__ == "__main__":
     mp.spawn(main, args=(args.ndevice,), nprocs=args.ndevice, join=True)
-    dist.barrier()
+    dist.barrier()  # Synchronizes all processes. This collective blocks processes until the whole group enters this function,
+                    # if async_op is False (the default), or if async work handle is called on wait().
     dist.destroy_process_group()

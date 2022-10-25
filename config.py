@@ -55,6 +55,12 @@ else:
     raise NotImplementedError
 
 model_name = f"{backbone}-{optimizer}-{pred_mode}-{loss_type}-{data_config['dataset_name']}-d{embed_dim}-t{iteration_step}-{transform_mode}-al{aux_loss}{additional_note}"
+<<<<<<< HEAD
 
 result_root = "results"
 tensorboard_root = "tensorboard"
+=======
+# model_name = "resnet-adam-noise-l1-city-d64-t1600-residual-False-
+result_root = "*"
+tensorboard_root = "*"
+>>>>>>> 4edb935 (commented)

@@ -1,6 +1,6 @@
 from data import load_data
 import argparse
-import config_test as config
+# import config_test as config
 import os
 import torch
 
@@ -9,8 +9,10 @@ from modules.unet import Unet
 from modules.temporal_models import HistoryNet, CondNet
 from torchvision.utils import save_image
 from torchvision.io import write_video
-from joblib import Parallel, delayed
+from joblib import Parallel, delayed  # joblib is a set of tools that provides lightweighpelining with Python
 
+# am adding this next line
+import config
 # import torchvision.transforms.functional as VF
 
 parser = argparse.ArgumentParser(description="values from bash script")
@@ -18,16 +20,16 @@ parser.add_argument("--device", type=int, required=True, help="cuda device")
 args = parser.parse_args()
 
 
-def get_dim(data_config):
-    return 48 if data_config["img_size"] == 64 else 64
+def get_dim(data_config_):
+    return 48 if data_config_["img_size"] == 64 else 64
 
 
-def get_transform_mults(data_config):
-    return (1, 2, 3, 4) if data_config["img_size"] in [128, 256] else (1, 2, 2, 4)
+def get_transform_mults(data_config_):
+    return (1, 2, 3, 4) if data_config_["img_size"] in [128, 256] else (1, 2, 2, 4)
 
 
-def get_main_mults(data_config):
-    return (1, 1, 2, 2, 4, 4) if data_config["img_size"] in [128, 256] else (1, 2, 4, 8)
+def get_main_mults(data_config_):
+    return (1, 1, 2, 2, 4, 4) if data_config_["img_size"] in [128, 256] else (1, 2, 4, 8)
 
 
 for data_config in config.data_configs:

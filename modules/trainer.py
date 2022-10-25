@@ -90,7 +90,7 @@ class Trainer(object):
         self.reset_parameters()
 
     def reset_parameters(self):
-        self.ema_model.load_state_dict(self.model.state_dict())
+        self.ema_model.load_state_dict(self.model.state_dict())  # self.ema_model is a deep copy of self.model, which is the GaussianDiffusion model.
 
     def step_ema(self):
         if self.step < self.step_start_ema:
@@ -99,6 +99,7 @@ class Trainer(object):
             self.ema.update_model_average(self.ema_model, self.model)
 
     def save(self):
+        """ Save the model at a step."""
         if self.device == 0:
             data = {
                 "step": self.step,
@@ -109,6 +110,7 @@ class Trainer(object):
             torch.save(data, str(self.results_folder / f"{self.model_name}_{idx}.pt"))
 
     def load(self, idx=0, load_step=True):
+        """ Load model at a given step."""
         data = torch.load(
             str(self.results_folder / f"{self.model_name}_{idx}.pt"),
             map_location=lambda storage, loc: storage,
@@ -120,12 +122,17 @@ class Trainer(object):
         self.ema_model.module.load_state_dict(data["ema"])
 
     def train(self):
+        """ Main train function."""
 
-        while self.step < self.train_num_steps:
+        """ Main Loop."""
+        while self.step < self.train_num_steps:  # self.step starts at 0, self.train_num_steps is 1M
             if (self.step >= self.scheduler_checkpoint_step) and (self.step != 0):
-                self.scheduler.step()
-            data = next(self.train_dl).to(self.device)
-            loss = self.model(data * 2.0 - 1.0)
+                self.scheduler.step()  # self.scheduler is the learning rate; self.scheduler.step() makes a step in the LR schedule.
+            """
+            Get data, forward, get loss.
+            """
+            data = next(self.train_dl).to(self.device)  # data is now 8 x 1 x 1 x 256 x 256 (time/batch/channels/height/width)?
+            loss = self.model(data * 2.0 - 1.0)  # this calls GaussianDiffusion.forward()
             loss.backward()
             if self.device == 0:
                 self.writer.add_scalar("sequence_length", data.shape[0], self.step)
@@ -139,8 +146,11 @@ class Trainer(object):
                 self.step_ema()
 
             if (self.step % self.save_and_sample_every == 0) and (self.step != 0):
-                # milestone = self.step // self.save_and_sample_every
+                """
+                Save and Sample (every 1000)
+                """
                 if exists(self.model.module.transform_fn) and len(self.model.module.otherlogs["predict"]) > 0:
+                    #  Todo: Investigate this: otherlogs["predict"]
                     self.writer.add_video(
                         f"predicted/device{self.device}",
                         (self.model.module.otherlogs["predict"].transpose(0, 1) + 1) * 0.5,
@@ -149,7 +159,7 @@ class Trainer(object):
                 for i, batch in enumerate(self.val_dl):
                     if i >= self.val_num_of_batch:
                         break
-                    videos = self.ema_model.module.sample(
+                    videos = self.ema_model.module.sample(  # This calls GaussianDiffusion.sample()
                         batch[: self.init_num_of_frame].to(self.device) * 2.0 - 1.0,
                         self.sample_num_of_frame,
                     )
@@ -168,8 +178,8 @@ class Trainer(object):
                     self.save()
                 dist.barrier()
 
-            self.step += 1
-        if self.device == 0:
+            self.step += 1 # bottom of the training loop.
+        if self.device == 0:  # final save for device:0
             self.save()
         print("training completed")
 

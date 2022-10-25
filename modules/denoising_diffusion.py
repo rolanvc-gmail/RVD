@@ -11,9 +11,9 @@ from .utils import exists, cosine_beta_schedule, extract, noise_like, default, e
 class GaussianDiffusion(nn.Module):
     def __init__(
         self,
-        denoise_fn,
-        history_fn,
-        transform_fn=None,
+        denoise_fn,  # UNet
+        history_fn,  # CondNet
+        transform_fn=None,  #(HistoryNet)
         channels=3,
         timesteps=1000,
         loss_type="l1",
@@ -33,13 +33,14 @@ class GaussianDiffusion(nn.Module):
         self.otherlogs = {}
         self.aux_loss = aux_loss
 
+        # if betas are provided, use those; otherwise, use a cosine schedule
         if exists(betas):
             betas = betas.detach().cpu().numpy() if isinstance(betas, torch.Tensor) else betas
         else:
             betas = cosine_beta_schedule(timesteps)
 
-        alphas = 1.0 - betas
-        alphas_cumprod = np.cumprod(alphas, axis=0)
+        alphas = 1.0 - betas  # check, as with paper.
+        alphas_cumprod = np.cumprod(alphas, axis=0)  # check also in paper.
         alphas_cumprod_prev = np.append(1.0, alphas_cumprod[:-1])
 
         (timesteps,) = betas.shape
@@ -48,14 +49,14 @@ class GaussianDiffusion(nn.Module):
 
         to_torch = partial(torch.tensor, dtype=torch.float32)
 
-        self.register_buffer("betas", to_torch(betas))
-        self.register_buffer("alphas_cumprod", to_torch(alphas_cumprod))
-        self.register_buffer("alphas_cumprod_prev", to_torch(alphas_cumprod_prev))
+        self.register_buffer("betas", to_torch(betas))  # save with model.
+        self.register_buffer("alphas_cumprod", to_torch(alphas_cumprod))  # save with model
+        self.register_buffer("alphas_cumprod_prev", to_torch(alphas_cumprod_prev))  # save with model.
 
         # calculations for diffusion q(x_t | x_{t-1}) and others
-        self.register_buffer("sqrt_alphas_cumprod", to_torch(np.sqrt(alphas_cumprod)))
+        self.register_buffer("sqrt_alphas_cumprod", to_torch(np.sqrt(alphas_cumprod)))  #sqrt of alphas_cumprod. in paper, check.
         self.register_buffer(
-            "sqrt_one_minus_alphas_cumprod", to_torch(np.sqrt(1.0 - alphas_cumprod))
+            "sqrt_one_minus_alphas_cumprod", to_torch(np.sqrt(1.0 - alphas_cumprod))  # also in paper, eqn 12.
         )
         self.register_buffer("log_one_minus_alphas_cumprod", to_torch(np.log(1.0 - alphas_cumprod)))
         self.register_buffer("sqrt_recip_alphas_cumprod", to_torch(np.sqrt(1.0 / alphas_cumprod)))
@@ -64,7 +65,7 @@ class GaussianDiffusion(nn.Module):
         )
 
         # calculations for posterior q(x_{t-1} | x_t, x_0)
-        posterior_variance = betas * (1.0 - alphas_cumprod_prev) / (1.0 - alphas_cumprod)
+        posterior_variance = betas * (1.0 - alphas_cumprod_prev) / (1.0 - alphas_cumprod)  # in paper, eqn 7.
         # above: equal to 1. / (1. / (1. - alpha_cumprod_tm1) + alpha_t / beta_t)
         self.register_buffer("posterior_variance", to_torch(posterior_variance))
         # below: log calculation clipped because the posterior variance is 0 at the beginning of the diffusion chain
@@ -74,11 +75,11 @@ class GaussianDiffusion(nn.Module):
         )
         self.register_buffer(
             "posterior_mean_coef1",
-            to_torch(betas * np.sqrt(alphas_cumprod_prev) / (1.0 - alphas_cumprod)),
+            to_torch(betas * np.sqrt(alphas_cumprod_prev) / (1.0 - alphas_cumprod)),  # eqn 7, coefficient of x_0
         )
         self.register_buffer(
             "posterior_mean_coef2",
-            to_torch((1.0 - alphas_cumprod_prev) * np.sqrt(alphas) / (1.0 - alphas_cumprod)),
+            to_torch((1.0 - alphas_cumprod_prev) * np.sqrt(alphas) / (1.0 - alphas_cumprod)),  # eqn 7 coefficient of x_1
         )
 
     def q_mean_variance(self, x_start, t):
@@ -188,6 +189,17 @@ class GaussianDiffusion(nn.Module):
         )
 
     def p_losses(self, x_start, context, t, trans_shift_scale):
+        """
+
+        Args:
+            x_start: a 1 x 1 x 256 x 256 frame...
+            context:
+            t:
+            trans_shift_scale:
+
+        Returns:
+
+        """
         noise = torch.randn_like(x_start)
         cur_frame = x_start
         if exists(self.transform_fn):
@@ -220,15 +232,30 @@ class GaussianDiffusion(nn.Module):
     def step_forward(self, x, context, t, trans_shift_scale):
         # _, _, h, w, img_size = *x.shape, self.image_size
         # assert h == img_size and w == img_size, f"height and width of image must be {img_size}"
+        # based on the call from forward(), x = video[i], so its shape must be 1, 1, 256, 256
+        # context and trans_shift_scale are tensors created by scan_context.
+        # and t is a random number between 0 and self.num_timesteps,
+        # which i assume is the number of steps in the diffusion and denoising process.
         return self.p_losses(x, context, t, trans_shift_scale)
     
     def scan_context(self, x):
+        """
+        Using self.history_fn(x) and self.transform_fn(x), context and trans_shift_scale are created.
+        Args:
+            x: the video frame
+        Returns: context, trans_shift_scale.
+
+        """
         context = self.history_fn(x)
         trans_shift_scale = self.transform_fn(x) if exists(self.transform_fn) else None
         return context, trans_shift_scale
 
+<<<<<<< HEAD
     def forward(self, video):
         """ video is Tensor(8, 1, 1, 256,256) """
+=======
+    def forward(self, video):  # input is a video frame.
+>>>>>>> 4edb935 (commented)
         device = video.device
         T, B, C, H, W = video.shape
         t = torch.randint(0, self.num_timesteps, (B,), device=device).long()
@@ -239,13 +266,22 @@ class GaussianDiffusion(nn.Module):
             self.transform_fn.init_state(state_shape)
             self.otherlogs["predict"] = []
 
+<<<<<<< HEAD
         for i in range(video.shape[0]): # go through the batch
             if i >= 2:
                 L = self.step_forward(video[i], context, t, trans_shift_scale)
+=======
+        for i in range(video.shape[0]):
+            if i >= 2:  # do not do if i == 0,1
+                L = self.step_forward(video[i], context, t, trans_shift_scale)  # step_forward just calls p_losses and returns
+>>>>>>> 4edb935 (commented)
                 loss += L
-            if i < video.shape[0] - 1:
+            if i < video.shape[0] - 1:  # while not the last...
+                """ scan_context creates context and trans_shift_scale out of the video[i], 
+                    through the history_fn and  transform_fn, respectively.
+                """
                 context, trans_shift_scale = self.scan_context(video[i])
 
         if exists(self.transform_fn):
             self.otherlogs["predict"] = torch.stack(self.otherlogs["predict"], 0)
-        return loss / (video.shape[0] - 2)
+        return loss / (video.shape[0] - 2) # loss is averaged over 6 frames only (exclude 0, 1)
