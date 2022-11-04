@@ -40,13 +40,13 @@ def load_dataset(data_config):
             print("Done.")
 
             print("Unzipping KTH Actions datasets...")
-            # for action in actions:
-            #     print("Unzipping " + action + "...")
-            #     zip_ref = ZipFile(os.path.join(data_path, "kth_actions", action + ".zip"), "r")
-            #     os.makedirs(os.path.join(data_path, "kth_actions", action))
-            #     zip_ref.extractall(os.path.join(data_path, "kth_actions", action))
-            #     zip_ref.close()
-            #     # os.remove(os.path.join(data_path, "kth_actions", action + ".zip"))
+            for action in actions:
+                print("Unzipping " + action + "...")
+                zip_ref = ZipFile(os.path.join(data_path, "kth_actions", action + ".zip"), "r")
+                os.makedirs(os.path.join(data_path, "kth_actions", action))
+                zip_ref.extractall(os.path.join(data_path, "kth_actions", action))
+                zip_ref.close()
+                # os.remove(os.path.join(data_path, "kth_actions", action + ".zip"))
             print("Done.")
 
             print("Processing KTH Actions datasets...")

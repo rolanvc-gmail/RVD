@@ -233,7 +233,7 @@ class GaussianDiffusion(nn.Module):
         # _, _, h, w, img_size = *x.shape, self.image_size
         # assert h == img_size and w == img_size, f"height and width of image must be {img_size}"
         # based on the call from forward(), x = video[i], so its shape must be 1, 1, 256, 256
-        # context and trans_shift_scale are tensors created by scan_context.
+        # the first time this is called, context and trans_shift_scale are None,
         # and t is a random number between 0 and self.num_timesteps,
         # which i assume is the number of steps in the diffusion and denoising process.
         return self.p_losses(x, context, t, trans_shift_scale)
@@ -250,12 +250,7 @@ class GaussianDiffusion(nn.Module):
         trans_shift_scale = self.transform_fn(x) if exists(self.transform_fn) else None
         return context, trans_shift_scale
 
-<<<<<<< HEAD
-    def forward(self, video):
-        """ video is Tensor(8, 1, 1, 256,256) """
-=======
     def forward(self, video):  # input is a video frame.
->>>>>>> 4edb935 (commented)
         device = video.device
         T, B, C, H, W = video.shape
         t = torch.randint(0, self.num_timesteps, (B,), device=device).long()
@@ -266,15 +261,9 @@ class GaussianDiffusion(nn.Module):
             self.transform_fn.init_state(state_shape)
             self.otherlogs["predict"] = []
 
-<<<<<<< HEAD
-        for i in range(video.shape[0]): # go through the batch
-            if i >= 2:
-                L = self.step_forward(video[i], context, t, trans_shift_scale)
-=======
         for i in range(video.shape[0]):
             if i >= 2:  # do not do if i == 0,1
                 L = self.step_forward(video[i], context, t, trans_shift_scale)  # step_forward just calls p_losses and returns
->>>>>>> 4edb935 (commented)
                 loss += L
             if i < video.shape[0] - 1:  # while not the last...
                 """ scan_context creates context and trans_shift_scale out of the video[i], 

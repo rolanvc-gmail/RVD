@@ -12,7 +12,7 @@ ema_step = 5
 ema_start_step = 2000
 
 # load
-load_model = False
+load_model = True
 load_step = False
 
 # diffusion config
@@ -36,7 +36,7 @@ data_config = {
     "data_path": "datasets",
     "sequence_length": 8,
     "img_size": 256,
-    "img_channel": 1,
+    "img_channel": 3,
     "add_noise": False,
     "img_hz_flip": False,
 }
@@ -55,12 +55,6 @@ else:
     raise NotImplementedError
 
 model_name = f"{backbone}-{optimizer}-{pred_mode}-{loss_type}-{data_config['dataset_name']}-d{embed_dim}-t{iteration_step}-{transform_mode}-al{aux_loss}{additional_note}"
-<<<<<<< HEAD
 
-result_root = "results"
-tensorboard_root = "tensorboard"
-=======
-# model_name = "resnet-adam-noise-l1-city-d64-t1600-residual-False-
 result_root = "*"
 tensorboard_root = "*"
->>>>>>> 4edb935 (commented)
